@@ -28,6 +28,8 @@ public class MainActivity extends AppCompatActivity implements Callback<JsonObje
     private LocationManager locationManager;
     private String provider;
 
+    private Criteria criteria;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -38,6 +40,12 @@ public class MainActivity extends AppCompatActivity implements Callback<JsonObje
         longTxt = (TextView)findViewById(R.id.txt_current_long);
 
         locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
+
+        criteria = new Criteria();
+
+        provider  = locationManager.getBestProvider(criteria, false);
+
+
 
         BookingListApiAdapter.getApiService().getBookingData(this);
     }
@@ -68,11 +76,6 @@ public class MainActivity extends AppCompatActivity implements Callback<JsonObje
 
     public void getCurrentPosition(View view){
 
-
-        Criteria criteria = new Criteria();
-
-        provider  = locationManager.getBestProvider(criteria, false);
-
         Location location = locationManager.getLastKnownLocation(provider);
 
         if (location != null) {
@@ -82,6 +85,7 @@ public class MainActivity extends AppCompatActivity implements Callback<JsonObje
             latTxt.setText("Location not available");
             longTxt.setText("Location not available");
         }
+
 
 
     }
