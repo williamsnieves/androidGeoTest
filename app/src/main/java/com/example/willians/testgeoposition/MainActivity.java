@@ -14,6 +14,13 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.example.willians.testgeoposition.rest.BookingListApiAdapter;
+import com.google.android.gms.maps.CameraUpdateFactory;
+import com.google.android.gms.maps.GoogleMap;
+import com.google.android.gms.maps.MapFragment;
+import com.google.android.gms.maps.model.BitmapDescriptorFactory;
+import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.Marker;
+import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.gson.JsonObject;
 
 import retrofit.Callback;
@@ -30,11 +37,17 @@ public class MainActivity extends AppCompatActivity implements Callback<JsonObje
 
     private Criteria criteria;
 
+    private LatLng currentPosition;
+
+    private GoogleMap map;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+        map  = ((MapFragment)getFragmentManager().findFragmentById(R.id.map)).getMap();
 
         latTxt = (TextView)findViewById(R.id.txt_current_lat);
         longTxt = (TextView)findViewById(R.id.txt_current_long);
@@ -117,11 +130,23 @@ public class MainActivity extends AppCompatActivity implements Callback<JsonObje
 
     @Override
     public void onLocationChanged(Location location) {
-        int lat = (int)(location.getLatitude());
-        int lgn = (int)(location.getLongitude());
+        float lat = (float)(location.getLatitude());
+        float lgn = (float)(location.getLongitude());
+
+        currentPosition = new LatLng(lat, lgn);
 
         latTxt.setText(String.valueOf(lat));
         longTxt.setText(String.valueOf(lgn));
+        if(map != null){
+            Marker current = map.addMarker(new MarkerOptions()
+                    .position(currentPosition)
+                    .title("Posicion actual")
+                    .snippet("hola desde android maps")
+                    .icon(BitmapDescriptorFactory.fromResource(R.mipmap.ic_launcher)));
+        }
+
+        map.moveCamera(CameraUpdateFactory.newLatLngZoom(currentPosition, 1));
+        map.animateCamera(CameraUpdateFactory.zoomTo(10), 2000, null);
 
 
     }
