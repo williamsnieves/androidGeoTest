@@ -31,6 +31,9 @@ import retrofit.Callback;
 import retrofit.RetrofitError;
 import retrofit.client.Response;
 
+
+/* En la declaracion del activity implemento una interface que es el callback de la petición de retrofit y tambien
+se implementa el LocationListener que contiene metodos para manejar el tema de localizaciones */
 public class MainActivity extends AppCompatActivity implements Callback<JsonObject>, LocationListener {
 
     private TextView textView;
@@ -102,6 +105,8 @@ public class MainActivity extends AppCompatActivity implements Callback<JsonObje
 
     public void getServerData(View view){
 
+
+        //Esto me permite hacer la peticion al servidor a traves de retrofit iniciando el service definido tanto en el adapter como en la interface
         BookingListApiAdapter.getApiService().getBookingData(this);
 
     }
@@ -132,6 +137,12 @@ public class MainActivity extends AppCompatActivity implements Callback<JsonObje
         locationManager.removeUpdates(this);
     }
 
+
+    /* En el metodo success recibo la respuesta de retrofit la cual me devuelve el json del servidor en un JsonObject
+    * luego en este metodo se agrega a textview el string de la respuesta, es decir el json convertido en string
+    *
+    * */
+
     @Override
     public void success(JsonObject jsonObject, Response response) {
 
@@ -139,8 +150,11 @@ public class MainActivity extends AppCompatActivity implements Callback<JsonObje
         textView = (TextView)findViewById(R.id.txt_json);
         textView.setText(jsonObject.getAsJsonObject().toString());
 
+        //obtengo la posicion del telefono
+
         Location location = locationManager.getLastKnownLocation(provider);
 
+        //si no es null llamo al metodo onLocationChanged donde se termina el proceso de mostrar en mapa y calcular el centroid
         if (location != null) {
             System.out.println("Provider " + provider + " has been selected.");
             onLocationChanged(location);
@@ -163,9 +177,18 @@ public class MainActivity extends AppCompatActivity implements Callback<JsonObje
         float lat = (float)(location.getLatitude());
         float lgn = (float)(location.getLongitude());
 
+        //creo un objeto de tipo LatLng que me permite tener una coordenada exacta
+
         currentPosition = new LatLng(lat, lgn);
 
+        //agrego la coordenada al array list listCoords esto para calcular el centroid posteriormente
+
         listCoords.add(currentPosition);
+
+        /* Del json obtenido tras la respuesta del servidor hacemos un parse y obtenemos el array de bookings
+        * luego iteramos a traves de un for y creamos un objeto de tipo LatLng con cada una de las coordenadas que
+        * se encuentran e el array de bookings. Seguidamente se agrega ese objeto a una lista de coordenadas
+        * */
 
         JsonArray myBookings = jsonResponseData.getAsJsonObject().getAsJsonArray("bookings");
 
@@ -184,11 +207,19 @@ public class MainActivity extends AppCompatActivity implements Callback<JsonObje
         listCoords.add(position2);
         listCoords.add(position3);*/
 
+
+        //Aqui se llama al metodo getCentroid para obtener el centroid de un conjunto de coordenadas que se encuentran en la lista listCoords
+
         LatLng centroid = getCentroid(listCoords);
 
+        //muestro el resultado del centroide en un Toast
         Toast.makeText(this, centroid.toString(), Toast.LENGTH_LONG).show();
 
 
+
+        /*
+        * Aqui utilizo google maps para mostrar la posicion actual del dispositivo
+        * */
         latTxt.setText(String.valueOf(lat));
         longTxt.setText(String.valueOf(lgn));
         if(map != null){
