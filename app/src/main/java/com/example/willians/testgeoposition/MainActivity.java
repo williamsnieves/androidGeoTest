@@ -19,9 +19,13 @@ import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.MapFragment;
 import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.LatLngBounds;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
+import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
+
+import java.util.ArrayList;
 
 import retrofit.Callback;
 import retrofit.RetrofitError;
@@ -39,7 +43,16 @@ public class MainActivity extends AppCompatActivity implements Callback<JsonObje
 
     private LatLng currentPosition;
 
+    private LatLng bookingCoord;
+    private LatLng position1;
+    private LatLng position2;
+    private LatLng position3;
+
     private GoogleMap map;
+
+    private ArrayList<LatLng> listCoords;
+
+    private JsonObject jsonResponseData;
 
 
     @Override
@@ -58,9 +71,9 @@ public class MainActivity extends AppCompatActivity implements Callback<JsonObje
 
         provider  = locationManager.getBestProvider(criteria, false);
 
+        listCoords = new ArrayList<LatLng>();
 
 
-        BookingListApiAdapter.getApiService().getBookingData(this);
     }
 
     @Override
@@ -87,20 +100,24 @@ public class MainActivity extends AppCompatActivity implements Callback<JsonObje
 
 
 
-    public void getCurrentPosition(View view){
+    public void getServerData(View view){
 
-        Location location = locationManager.getLastKnownLocation(provider);
+        BookingListApiAdapter.getApiService().getBookingData(this);
 
-        if (location != null) {
-            System.out.println("Provider " + provider + " has been selected.");
-            onLocationChanged(location);
-        } else {
-            latTxt.setText("Location not available");
-            longTxt.setText("Location not available");
+    }
+
+
+    private LatLng getCentroid(ArrayList<LatLng> coordsList){
+        LatLng centerLatLng = null;
+        LatLngBounds.Builder builder = new LatLngBounds.Builder();
+        for(int i = 0 ; i < coordsList.size() ; i++)
+        {
+            builder.include(coordsList.get(i));
         }
+        LatLngBounds bounds = builder.build();
+        centerLatLng =  bounds.getCenter();
 
-
-
+        return centerLatLng;
     }
 
     @Override
@@ -117,8 +134,21 @@ public class MainActivity extends AppCompatActivity implements Callback<JsonObje
 
     @Override
     public void success(JsonObject jsonObject, Response response) {
+
+        jsonResponseData = jsonObject;
         textView = (TextView)findViewById(R.id.txt_json);
         textView.setText(jsonObject.getAsJsonObject().toString());
+
+        Location location = locationManager.getLastKnownLocation(provider);
+
+        if (location != null) {
+            System.out.println("Provider " + provider + " has been selected.");
+            onLocationChanged(location);
+        } else {
+            latTxt.setText("Location not available");
+            longTxt.setText("Location not available");
+        }
+        //textView.setText(jsonObject.getAsJsonObject().getAsJsonArray("bookings").get(0).getAsJsonObject().get("lat").getAsString());
 
         //Log.e("Json response", jsonObject.getAsJsonObject().toString());
     }
@@ -134,6 +164,30 @@ public class MainActivity extends AppCompatActivity implements Callback<JsonObje
         float lgn = (float)(location.getLongitude());
 
         currentPosition = new LatLng(lat, lgn);
+
+        listCoords.add(currentPosition);
+
+        JsonArray myBookings = jsonResponseData.getAsJsonObject().getAsJsonArray("bookings");
+
+        for(int i = 0 ; i < myBookings.size() ; i++)
+        {
+            bookingCoord = new LatLng(myBookings.get(i).getAsJsonObject().get("lat").getAsFloat(), myBookings.get(i).getAsJsonObject().get("lon").getAsFloat());
+
+            listCoords.add(bookingCoord);
+        }
+
+        /*position1 = new LatLng(4.703230, -74.028926);
+        position2 = new LatLng(4.699359, -74.027681);
+        position3 = new LatLng(4.699594, -74.034720);
+        listCoords.add(currentPosition);
+        listCoords.add(position1);
+        listCoords.add(position2);
+        listCoords.add(position3);*/
+
+        LatLng centroid = getCentroid(listCoords);
+
+        Toast.makeText(this, centroid.toString(), Toast.LENGTH_LONG).show();
+
 
         latTxt.setText(String.valueOf(lat));
         longTxt.setText(String.valueOf(lgn));

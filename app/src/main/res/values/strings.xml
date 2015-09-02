@@ -1,5 +1,5 @@
 <resources>
     <string name="app_name">TestGeoposition</string>
-    <string name="button_name">Get My Position</string>
+    <string name="button_name">Get Data from server</string>
     <string name="action_settings">Settings</string>
 </resources>
