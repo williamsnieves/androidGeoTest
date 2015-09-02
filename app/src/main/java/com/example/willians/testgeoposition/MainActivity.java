@@ -47,9 +47,7 @@ public class MainActivity extends AppCompatActivity implements Callback<JsonObje
     private LatLng currentPosition;
 
     private LatLng bookingCoord;
-    private LatLng position1;
-    private LatLng position2;
-    private LatLng position3;
+
 
     private GoogleMap map;
 
@@ -162,9 +160,6 @@ public class MainActivity extends AppCompatActivity implements Callback<JsonObje
             latTxt.setText("Location not available");
             longTxt.setText("Location not available");
         }
-        //textView.setText(jsonObject.getAsJsonObject().getAsJsonArray("bookings").get(0).getAsJsonObject().get("lat").getAsString());
-
-        //Log.e("Json response", jsonObject.getAsJsonObject().toString());
     }
 
     @Override
@@ -199,13 +194,6 @@ public class MainActivity extends AppCompatActivity implements Callback<JsonObje
             listCoords.add(bookingCoord);
         }
 
-        /*position1 = new LatLng(4.703230, -74.028926);
-        position2 = new LatLng(4.699359, -74.027681);
-        position3 = new LatLng(4.699594, -74.034720);
-        listCoords.add(currentPosition);
-        listCoords.add(position1);
-        listCoords.add(position2);
-        listCoords.add(position3);*/
 
 
         //Aqui se llama al metodo getCentroid para obtener el centroid de un conjunto de coordenadas que se encuentran en la lista listCoords
